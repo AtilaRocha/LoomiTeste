@@ -1,0 +1,103 @@
+generator client {
+  provider = "preview-darts"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ========= ENUMS (Tipos com valores pré-definidos) =========
+enum TipoUsuario {
+  ADMIN
+  CLIENTE
+}
+
+enum StatusPedido {
+  RECEBIDO
+  EM_PREPARACAO
+  DESPACHADO
+  ENTREGUE
+}
+
+// ========= MODELS (Representam as tabelas do banco) =========
+
+model Usuario {
+  id              String      @id @default(uuid())
+  nome            String
+  email           String      @unique
+  senha           String // Deve ser armazenada como um hash
+  tipo            TipoUsuario @default(CLIENTE)
+  dataCriacao     DateTime    @default(now())
+  dataAtualizacao DateTime    @updatedAt
+
+  cliente         Cliente? // Relacionamento 1-para-1 com Cliente
+}
+
+model Cliente {
+  id              String    @id @default(uuid())
+  nomeCompleto    String
+  contato         String
+  endereco        String
+  status          Boolean   @default(true) // true para Ativo, false para Inativo
+  dataCriacao     DateTime  @default(now())
+  dataAtualizacao DateTime  @updatedAt
+
+  // Relacionamento com Usuário
+  usuario         Usuario   @relation(fields: [usuarioId], references: [id])
+  usuarioId       String    @unique
+
+  // Relacionamento com Pedido
+  pedidos         Pedido[]
+}
+
+model Produto {
+  id                 String          @id @default(uuid())
+  nomeProduto        String
+  descricao          String
+  preco              Float // Prisma usa Float para representar Decimal
+  quantidadeEmEstoque Int
+  dataCriacao        DateTime        @default(now())
+  dataAtualizacao    DateTime        @updatedAt
+
+  // Relacionamento com ItemDoPedido
+  itensDoPedido      ItemDoPedido[]
+}
+
+model Pedido {
+  id             String       @id @default(uuid())
+  statusPedido   StatusPedido @default(RECEBIDO)
+  dataDoPedido   DateTime     @default(now())
+  totalDoPedido  Float
+
+  // Relacionamento com Cliente
+  cliente        Cliente      @relation(fields: [clienteId], references: [id])
+  clienteId      String
+
+  // Relacionamento com ItemDoPedido
+  itensDoPedido  ItemDoPedido[]
+}
+
+model ItemDoPedido {
+  id               String  @id @default(uuid())
+  quantidade       Int
+  precoPorUnidade  Float
+  subtotal         Float // Calculado como Quantidade * Preço por Unidade
+
+  // Relacionamento com Pedido
+  pedido           Pedido  @relation(fields: [pedidoId], references: [id])
+  pedidoId         String
+
+  // Relacionamento com Produto
+  produto          Produto @relation(fields: [produtoId], references: [id])
+  produtoId        String
+}
+
+// Tabela Auxiliar para Relatórios
+model RelatorioDeVendas {
+  id               String   @id @default(uuid())
+  periodo          DateTime // Data que representa o período do relatório (ex: primeiro dia do mês)
+  totalDeVendas    Float
+  produtosVendidos Int
+  caminhoDoArquivo String   // Caminho para o arquivo .csv no serviço de storage
+}
