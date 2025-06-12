@@ -1,3 +1,5 @@
+// src/application/clientes/clientes.service.ts
+
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { IClienteRepository } from 'src/domain/clientes/repositories/IClienteRepository';
 import { IUsuarioRepository } from 'src/domain/usuarios/repositories/IUsuarioRepository';
@@ -8,23 +10,21 @@ export class ClientesService {
   constructor(
     @Inject(IClienteRepository)
     private readonly clienteRepository: IClienteRepository,
-    @Inject(IUsuarioRepository) // Injeta o repo de usuário para verificação
+    @Inject(IUsuarioRepository)
     private readonly usuarioRepository: IUsuarioRepository,
   ) {}
 
-  async create(createClienteDto: CreateClienteDto) {
-    // Regra de negócio: O usuário precisa existir para se tornar um cliente
-    const usuario = await this.usuarioRepository.findById(
-      createClienteDto.usuarioId,
-    );
+  async create(createClienteDto: CreateClienteDto, usuarioId: string) {
+    const usuario = await this.usuarioRepository.findById(usuarioId);
     if (!usuario) {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    // Aqui você pode adicionar outras lógicas, como verificar se o usuário já é um cliente
+    const clienteData = {
+      ...createClienteDto,
+      usuarioId: usuarioId,
+    };
 
-    return this.clienteRepository.create(createClienteDto);
+    return this.clienteRepository.create(clienteData);
   }
-
-  // Implemente os outros casos de uso (findAll, findOne, etc.)
 }

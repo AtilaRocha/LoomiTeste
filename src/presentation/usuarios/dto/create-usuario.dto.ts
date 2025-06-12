@@ -1,24 +1,39 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator';
-
-export enum TipoUsuario {
-  Admin = 'Admin',
-  Cliente = 'Cliente',
-}
+import { TipoUsuario } from '@prisma/client';
 
 export class CreateUsuarioDto {
-  @IsString({ message: 'O nome deve ser uma string.' })
-  @IsNotEmpty({ message: 'O nome não pode ser vazio.' })
+  @ApiProperty({
+    description: 'Nome completo do usuário.',
+    example: 'João da Silva',
+  })
+  @IsString()
+  @IsNotEmpty()
   nome: string;
 
-  @IsEmail({}, { message: 'O email fornecido é inválido.' })
-  @IsNotEmpty({ message: 'O email não pode ser vazio.' })
+  @ApiProperty({
+    description: 'Endereço de e-mail único do usuário.',
+    example: 'joao.silva@email.com',
+  })
+  @IsEmail()
+  @IsNotEmpty()
   email: string;
 
+  @ApiProperty({
+    description: 'Senha do usuário, com no mínimo 6 caracteres.',
+    example: '123456',
+  })
   @IsString()
-  @MinLength(6, { message: 'A senha deve ter pelo menos 6 caracteres.' })
-  @IsNotEmpty({ message: 'A senha não pode ser vazia.' })
+  @MinLength(6)
+  @IsNotEmpty()
   senha: string;
 
-  @IsEnum(TipoUsuario, { message: 'Tipo de usuário inválido.' })
+  @ApiProperty({
+    description: 'Tipo de acesso do usuário.',
+    enum: TipoUsuario,
+    example: TipoUsuario.CLIENTE,
+  })
+  @IsEnum(TipoUsuario)
+  @IsNotEmpty()
   tipo: TipoUsuario;
 }

@@ -6,7 +6,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { TipoUsuario } from './create-usuario.dto';
+import { TipoUsuario } from '@prisma/client';
 
 export class UpdateUsuarioDto {
   @IsOptional()
