@@ -1,18 +1,32 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UsuariosService } from './usuarios.service';
+import { Inject, Injectable, ConflictException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { IUsuarioRepository } from '../../domain/usuarios/repositories/IUsuarioRepository';
+import { CreateUsuarioDto } from '../../presentation/usuarios/dto/create-usuario.dto';
 
-describe('UsuariosService', () => {
-  let service: UsuariosService;
+@Injectable()
+export class UsuariosService {
+  constructor(
+    @Inject('IUsuarioRepository')
+    private readonly usuarioRepository: IUsuarioRepository,
+  ) {}
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [UsuariosService],
-    }).compile();
+  async create(createUsuarioDto: CreateUsuarioDto) {
+    const emailExists = await this.usuarioRepository.findByEmail(
+      createUsuarioDto.email,
+    );
+    if (emailExists) {
+      throw new ConflictException('O e-mail já está em uso.');
+    }
+    const hashedPassword = await bcrypt.hash(createUsuarioDto.senha, 10);
+    return this.usuarioRepository.create({
+      ...createUsuarioDto,
+      senha: hashedPassword,
+    });
+  }
 
-    service = module.get<UsuariosService>(UsuariosService);
-  });
+  async findByEmail(email: string) {
+    return this.usuarioRepository.findByEmail(email);
+  }
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
+  // Implemente outros casos de uso aqui...
+}
