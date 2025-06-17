@@ -1,0 +1,10 @@
+node_modules
+.husky
+test
+dist
+.env.example
+.eslint.js
+.gitignore
+.prettierc
+commitlint.config.ts
+README.md

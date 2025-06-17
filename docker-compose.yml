@@ -1,31 +1,59 @@
 services:
-  api:
+  db:
+    container_name: postgres_container
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - '5432:5432'
+    networks:
+      - backend_network
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  nest-backend:
+    container_name: loomi-ecom-api
+    image: loomi-ecom-api
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
+    ports:
+      - '3000:3000'
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+      POSTGRES_SCHEMA: ${POSTGRES_SCHEMA}
+      LOCAL_HOST: ${LOCAL_HOST}
+      DATABASE_URL: ${DATABASE_URL}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      SENDGRID_SENDER_EMAIL: ${SENDGRID_SENDER_EMAIL}
+    networks:
+      - backend_network
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-    ports:
-      - '3000:3000'
-    command: npm run start:dev
+    restart: unless-stopped
     depends_on:
       - db
-    env_file:
-      - .env
-
-  db:
-    image: postgres:15
-    container_name: ecom-db
-    ports:
-      - '5433:5432'
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: ecom_db
-    volumes:
-      - loomiecom_postgres_data:/var/lib/postgresql/data
+    command: >
+      sh -c "
+        npx prisma generate --schema=src/infra/database/postgres/prisma/schema.prisma &&
+        npx prisma migrate deploy --schema=src/infra/database/postgres/prisma/schema.prisma &&
+        npm run seed &&
+        npm run start:dev
+      "
 
 volumes:
-  loomiecom_postgres_data:
+  postgres_data: {}
+
+networks:
+  backend_network:
+    driver: bridge

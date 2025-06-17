@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  name           String   @db.VarChar(100)
+  email          String   @unique @db.VarChar(200)
+  password       String
+  type           Role
+  email_verified Boolean  @default(false)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt // <-- Correção de sintaxe do atributo
+
+  client         Client?
+}
+
+model Client {
+  id         Int     @id @default(autoincrement())
+  user_id    Int     @unique
+  full_name  String  @db.VarChar(400)
+  contact    String  @unique @db.VarChar(50)
+  address    String  @db.VarChar(600)
+  status     Boolean @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt // <-- Correção de sintaxe do atributo
+
+  user       User    @relation(fields: [user_id], references: [id])
+  orders     Order[]
+}
+
+model Product {
+  id             Int      @id @default(autoincrement())
+  name           String   @db.VarChar(300)
+  description    String
+  price          Float
+  quantity_stock Int
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt // <-- Correção de sintaxe do atributo
+
+  items          Item[]
+}
+
+model Order {
+  id         Int      @id @default(autoincrement())
+  client_id  Int
+  status     OrderStatus @default(received)
+  order_date DateTime @default(now())
+  total      Float
+  updated_at DateTime @updatedAt // <-- Correção de sintaxe do atributo
+
+  client     Client   @relation(fields: [client_id], references: [id])
+  items      Item[]
+}
+
+model Item {
+  id             Int      @id @default(autoincrement())
+  order_id       Int
+  product_id     Int
+  quantity       Int
+  price_per_unit Float
+  subtotal       Float
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt // <-- Correção de sintaxe do atributo
+
+  order          Order    @relation(fields: [order_id], references: [id])
+  product        Product  @relation(fields: [product_id], references: [id])
+}
+
+enum Role {
+  admin
+  client
+}
+
+enum OrderStatus {
+  received
+  preparation
+  dispatched
+  delivered
+  refused
+}
