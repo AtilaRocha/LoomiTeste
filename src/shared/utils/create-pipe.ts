@@ -1,22 +1,13 @@
-import { AbstractValidationPipe } from '../validators/validator-pipe';
-
-export function createPipe(dto) {
-  return new AbstractValidationPipe(
-    { whitelist: true, transform: true },
-    { body: dto },
-  );
+import { YupValidationPipe } from '../validators/validator-pipe';
+import * as yup from 'yup';
+export function createPipe(dto: yup.AnyObjectSchema) {
+  return new YupValidationPipe(dto);
 }
 
-export function createPipeParam(dto) {
-  return new AbstractValidationPipe(
-    { whitelist: true, transform: true },
-    { param: dto },
-  );
+export function createPipeParam(dto: yup.AnyObjectSchema) {
+  return new YupValidationPipe(dto);
 }
 
-export function createPipeQuery(dto) {
-  return new AbstractValidationPipe(
-    { whitelist: true, transform: true },
-    { query: dto },
-  );
+export function createPipeQuery(dto: yup.AnyObjectSchema) {
+  return new YupValidationPipe(dto);
 }

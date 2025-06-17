@@ -14,6 +14,7 @@ import {
   Req,
   UseGuards,
   UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -46,7 +47,6 @@ import { ClientUserHttpDtoInput } from '../dto/user-http-context.dto';
 import { Roles } from 'src/presentation/roles.decorator';
 import { Role } from 'src/presentation/enum/role.enum';
 import { RolesGuard } from 'src/presentation/guard/roles.guard';
-import { createPipe } from 'src/shared/utils/create-pipe';
 import { HttpContext } from 'src/presentation/guard/http.context';
 
 @Controller('clients')
@@ -70,7 +70,7 @@ export class ClientController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(Role.Admin, Role.Client)
-  @UsePipes(createPipe(CreateClientDtoInput))
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @ApiOperation({ summary: 'Cria um novo perfil de cliente' })
   @ApiResponse({
     status: 201,
@@ -104,6 +104,7 @@ export class ClientController {
   @Get()
   @Roles(Role.Admin)
   @UseGuards(RolesGuard)
+  @UsePipes(new ValidationPipe({ transform: true }))
   @ApiOperation({ summary: 'Lista todos os clientes' })
   @ApiResponse({
     status: 200,
@@ -118,6 +119,7 @@ export class ClientController {
   @Patch(':id')
   @Roles(Role.Client, Role.Admin)
   @UseGuards(RolesGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @ApiOperation({ summary: 'Atualiza os dados de um cliente' })
   @ApiParam({ name: 'id', description: 'ID do cliente', type: Number })
   @ApiResponse({
