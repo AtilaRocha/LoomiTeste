@@ -34,18 +34,29 @@ import { FindByIdUserApplication } from 'src/application/users/find-by-id-user.a
 import { UpdateUserApplication } from 'src/application/users/update-user.application';
 import { ListUserApplication } from 'src/application/users/list-user.application';
 
-import { CreateUserDtoInput, CreateUserDtoOutput } from '../dto/create.dto';
-import { ActivedAccountDtoInput } from '../dto/actived-account.dto';
-import { LoginUserDtoInput } from '../dto/login.dto';
-import { UpdateUserDtoInput } from '../dto/update.dto';
-import { ListUserDtoInput, ListUserDtoOutput } from '../dto/list.dto';
+import {
+  CreateUserDtoInput,
+  createUserSchema,
+  CreateUserDtoOutput,
+} from '../dto/create.dto';
+import {
+  ActivedAccountDtoInput,
+  activateAccountSchema,
+} from '../dto/actived-account.dto';
+import { LoginUserDtoInput, loginUserSchema } from '../dto/login.dto';
+import { UpdateUserDtoInput, updateUserSchema } from '../dto/update.dto';
+import {
+  ListUserDtoInput,
+  listUserSchema,
+  ListUserDtoOutput,
+} from '../dto/list.dto';
 
 import { Public } from 'src/presentation/public.decorator';
 import { Roles } from 'src/presentation/roles.decorator';
 import { Role } from 'src/presentation/enum/role.enum';
 import { UserRole } from 'src/shared/user-role.enum';
 import { RolesGuard } from 'src/presentation/guard/roles.guard';
-import { createPipe } from 'src/shared/utils/create-pipe';
+import { YupValidationPipe } from 'src/shared/validators/validator-pipe';
 
 @Controller('users')
 @ApiTags('Users')
@@ -71,7 +82,7 @@ export class UserController {
   @Post('admin')
   @Roles(Role.Admin)
   @UseGuards(RolesGuard)
-  @UsePipes(createPipe(CreateUserDtoInput))
+  @UsePipes(new YupValidationPipe(createUserSchema))
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ summary: 'Cria um novo usuário Administrador' })
   @ApiResponse({
@@ -95,7 +106,7 @@ export class UserController {
 
   @Public()
   @Post('client')
-  @UsePipes(createPipe(CreateUserDtoInput))
+  @UsePipes(new YupValidationPipe(createUserSchema))
   @UseInterceptors(ClassSerializerInterceptor)
   @ApiOperation({ summary: 'Cria um novo usuário Cliente' })
   @ApiResponse({
@@ -119,7 +130,7 @@ export class UserController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @UsePipes(createPipe(LoginUserDtoInput))
+  @UsePipes(new YupValidationPipe(loginUserSchema))
   @ApiOperation({ summary: 'Realiza o login de um usuário' })
   @ApiResponse({
     status: 200,
@@ -134,6 +145,7 @@ export class UserController {
   @Public()
   @Get(':id/:token')
   @HttpCode(HttpStatus.OK)
+  @UsePipes(new YupValidationPipe(activateAccountSchema))
   @ApiOperation({ summary: 'Ativa a conta de um usuário' })
   @ApiParam({ name: 'id', description: 'ID do usuário' })
   @ApiParam({
@@ -170,6 +182,7 @@ export class UserController {
   @Get()
   @Roles(Role.Admin)
   @UseGuards(RolesGuard)
+  @UsePipes(new YupValidationPipe(listUserSchema))
   @ApiOperation({ summary: 'Lista todos os usuários com filtros' })
   @ApiResponse({
     status: 200,
@@ -185,6 +198,7 @@ export class UserController {
   @Patch(':id')
   @Roles(Role.Admin)
   @UseGuards(RolesGuard)
+  @UsePipes(new YupValidationPipe(updateUserSchema))
   @ApiOperation({ summary: 'Atualiza um usuário por ID' })
   @ApiParam({
     name: 'id',

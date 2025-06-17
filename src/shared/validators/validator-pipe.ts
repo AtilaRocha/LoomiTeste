@@ -1,35 +1,36 @@
+import * as yup from 'yup';
 import {
-  ArgumentMetadata,
+  PipeTransform,
   Injectable,
-  Type,
-  ValidationPipe,
-  ValidationPipeOptions,
+  ArgumentMetadata,
+  BadRequestException,
 } from '@nestjs/common';
 
-export const pipeArgs = {
-  whitelist: true,
-  transform: true,
-};
-
 @Injectable()
-export class AbstractValidationPipe extends ValidationPipe {
-  constructor(
-    options: ValidationPipeOptions,
-    private readonly targetTypes: {
-      body?: Type<any>;
-      query?: Type<any>;
-      param?: Type<any>;
-      custom?: Type<any>;
-    },
-  ) {
-    super({ ...options });
-  }
+export class YupValidationPipe implements PipeTransform<any> {
+  constructor(private schema: yup.AnyObjectSchema) {}
 
-  async transform(value: any, metadata: ArgumentMetadata) {
-    const targetType = this.targetTypes[metadata.type];
-    if (!targetType) {
-      return super.transform(value, metadata);
+  async transform(value: any, { type }: ArgumentMetadata) {
+    if (type !== 'body' && type !== 'query' && type !== 'param') {
+      return value;
     }
-    return super.transform(value, { ...metadata, metatype: targetType });
+
+    try {
+      const validatedValue = await this.schema.validate(value, {
+        abortEarly: false,
+        stripUnknown: true,
+      });
+      return validatedValue;
+    } catch (error) {
+      if (error instanceof yup.ValidationError) {
+        const errors = error.inner.map((err) => ({
+          path: err.path,
+          message: err.message,
+          value: err.value,
+        }));
+        throw new BadRequestException(errors);
+      }
+      throw new BadRequestException('Erro de validação desconhecido.');
+    }
   }
 }

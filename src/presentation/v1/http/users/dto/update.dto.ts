@@ -1,12 +1,32 @@
+import * as yup from 'yup';
+import { InferType } from 'yup';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { UserRole } from 'src/shared/user-role.enum';
 
-export class UpdateUserDtoInput {
+export const updateUserSchema = yup.object().shape({
+  name: yup
+    .string()
+    .min(3, 'O nome deve ter no mínimo 3 caracteres.')
+    .optional(),
+  email: yup
+    .string()
+    .email('O email é inválido.')
+    .optional()
+    .transform((value: string) => (value ? value.toLowerCase() : value)),
+  password: yup
+    .string()
+    .min(6, 'A senha deve ter no mínimo 6 caracteres.')
+    .optional(),
+  type: yup
+    .string()
+    .oneOf(Object.values(UserRole), 'Tipo de usuário inválido.')
+    .optional(),
+});
+
+type UpdateUserType = InferType<typeof updateUserSchema>;
+
+export class UpdateUserDtoInput implements UpdateUserType {
   @ApiProperty({ type: String, required: false, example: 'Rodrigo' })
-  @IsString()
-  @IsOptional()
   name?: string;
 
   @ApiProperty({
@@ -14,20 +34,12 @@ export class UpdateUserDtoInput {
     required: false,
     example: 'novoemail@gmail.com',
   })
-  @IsString()
-  @IsOptional()
-  @Transform(({ value }) => value.toLowerCase())
   email?: string;
 
   @ApiProperty({ type: String, required: false, example: '12345678' })
-  @IsString()
-  @MinLength(6)
-  @IsOptional()
   password?: string;
 
   @ApiProperty({ type: String, required: false, example: 'client' })
-  @IsEnum(UserRole)
-  @IsOptional()
   type?: UserRole;
 }
 

@@ -1,23 +1,33 @@
+import * as yup from 'yup';
+import { InferType } from 'yup';
 import { ApiProperty } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
-export class CreateUserDtoInput {
+export const createUserSchema = yup.object().shape({
+  name: yup
+    .string()
+    .required('O nome é obrigatório.')
+    .min(3, 'O nome deve ter no mínimo 3 caracteres.'),
+  email: yup
+    .string()
+    .email('O email é inválido.')
+    .required('O email é obrigatório.')
+    .transform((value: string) => (value ? value.toLowerCase() : value)),
+  password: yup
+    .string()
+    .required('A senha é obrigatória.')
+    .min(6, 'A senha deve ter no mínimo 6 caracteres.'),
+});
+
+type CreateUserType = InferType<typeof createUserSchema>;
+
+export class CreateUserDtoInput implements CreateUserType {
   @ApiProperty({ type: String, example: 'SeuNome' })
-  @IsString()
-  @IsNotEmpty()
   name: string;
 
   @ApiProperty({ type: String, example: 'seuemail@gmail.com' })
-  @IsString()
-  @IsNotEmpty()
-  @Transform(({ value }) => value.toLowerCase())
   email: string;
 
   @ApiProperty({ type: String, example: '12345678' })
-  @IsString()
-  @MinLength(6)
-  @IsNotEmpty()
   password: string;
 }
 
