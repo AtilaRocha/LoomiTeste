@@ -1,3 +1,3 @@
 export interface FindByIdUserUsecaseInput {
-  id: number;
+  id: string;
 }

@@ -13,9 +13,9 @@ export class UserRepository {
     return this.prisma.user.create({ data });
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
-      where: { id },
+      where: { id: Number(id) },
       include: this.relation,
     });
   }
@@ -50,17 +50,17 @@ export class UserRepository {
     });
   }
 
-  async update(id: number, data: Prisma.UserUpdateInput): Promise<User> {
+  async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
     return this.prisma.user.update({
-      where: { id },
+      where: { id: Number(id) },
       data,
       include: this.relation,
     });
   }
 
-  async delete(id: number): Promise<User> {
+  async delete(id: string): Promise<User> {
     return this.prisma.user.delete({
-      where: { id },
+      where: { id: Number(id) },
     });
   }
 }

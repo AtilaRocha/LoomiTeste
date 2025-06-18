@@ -1,3 +1,3 @@
 export interface DeleteClientApplicationInput {
-  id: number;
+  id: string;
 }

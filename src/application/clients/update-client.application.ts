@@ -30,7 +30,10 @@ export class UpdateClientApplication {
         throw new BadRequestException('No fields to update provided.');
       }
 
-      const client = await this.findByIdClientUseCase.execute(param);
+      const client = await this.findByIdClientUseCase.execute({
+        id: String(param.id),
+      });
+
       if (!client?.id) {
         throw new NotFoundException('Client not found!');
       }

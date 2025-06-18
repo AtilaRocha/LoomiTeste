@@ -17,7 +17,9 @@ export class FindByIdClientApplication {
     input: FindByIdClientApplicationInput,
   ): Promise<Record<string, any>> {
     try {
-      const client = await this.findByIdClientUseCase.execute(input);
+      const client = await this.findByIdClientUseCase.execute({
+        id: String(input.id),
+      });
       if (!client?.id) {
         throw new NotFoundException('Client not found');
       }

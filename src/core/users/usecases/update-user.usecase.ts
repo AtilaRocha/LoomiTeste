@@ -21,7 +21,7 @@ export class UpdateUserUsecase
   ): Promise<UpdateUserUsecaseOutput> {
     const { id, ...data } = input;
 
-    const user = await this._userRepository.update(id, data);
+    const user = await this._userRepository.update(String(id), data);
 
     return {
       id: user.id,

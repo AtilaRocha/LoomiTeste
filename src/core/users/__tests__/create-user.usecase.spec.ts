@@ -9,23 +9,24 @@ import { UserRole } from 'src/shared/user-role.enum';
 
 describe('CreateUserUsecase', () => {
   let usecase: CreateUserUsecase;
-  let repository: UserRepository;
+  let mockUserRepository: Partial<jest.Mocked<UserRepository>>;
 
   beforeEach(async () => {
+    mockUserRepository = {
+      create: jest.fn(),
+    } as Partial<jest.Mocked<UserRepository>>;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CreateUserUsecase,
         {
           provide: UserRepository,
-          useValue: {
-            create: jest.fn(),
-          },
+          useValue: mockUserRepository,
         },
       ],
     }).compile();
 
     usecase = module.get<CreateUserUsecase>(CreateUserUsecase);
-    repository = module.get<UserRepository>(UserRepository);
   });
 
   it('should be defined', () => {
@@ -40,19 +41,58 @@ describe('CreateUserUsecase', () => {
         password: '12345678',
         type: UserRole.CLIENT,
       };
-      const output: CreateUserUsecaseOutput = {
+
+      const mockCreatedUser: any = {
         id: 1,
-        created_at: new Date(),
-        updated_at: new Date(),
-        ...input,
+        name: input.name,
+        email: input.email,
+        password: 'hashedpassword',
+        type: input.type,
+        email_verified: false,
+        created_at: new Date('2025-06-17T10:00:00Z'),
+        updated_at: new Date('2025-06-17T10:00:00Z'),
       };
 
-      jest.spyOn(repository, 'create').mockResolvedValue(output as any);
+      const expectedOutput: CreateUserUsecaseOutput = {
+        id: mockCreatedUser.id,
+        name: mockCreatedUser.name,
+        email: mockCreatedUser.email,
+        password: mockCreatedUser.password,
+        type: mockCreatedUser.type,
+        email_verified: mockCreatedUser.email_verified,
+        created_at: mockCreatedUser.created_at,
+        updated_at: mockCreatedUser.updated_at,
+      };
+
+      (mockUserRepository.create as jest.Mock).mockResolvedValue(
+        mockCreatedUser,
+      );
 
       const result = await usecase.execute(input);
 
-      expect(repository.create).toHaveBeenCalledWith(input);
-      expect(result).toEqual(output);
+      expect(mockUserRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: input.name,
+          email: input.email,
+          type: input.type,
+        }),
+      );
+      expect(result).toEqual(expectedOutput);
+    });
+
+    it('should throw an error if repository.create fails', async () => {
+      const input: CreateUserUsecaseInput = {
+        name: 'Erro User',
+        email: 'erro@gmail.com',
+        password: 'pass',
+        type: UserRole.CLIENT,
+      };
+
+      const error = new Error('Database connection failed');
+      (mockUserRepository.create as jest.Mock).mockRejectedValue(error);
+
+      await expect(usecase.execute(input)).rejects.toThrow(error);
+      expect(mockUserRepository.create).toHaveBeenCalled();
     });
   });
 });

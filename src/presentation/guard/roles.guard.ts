@@ -23,17 +23,13 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    this.logger.log('--- [INICIANDO VERIFICAÇÃO DO GUARD] ---');
-
     try {
       const isPublic = this.reflector.getAllAndOverride<boolean>(
         IS_PUBLIC_KEY,
         [context.getHandler(), context.getClass()],
       );
 
-      this.logger.debug(`A rota é pública? ${isPublic}`);
       if (isPublic) {
-        this.logger.log('--- [FIM DO GUARD] Rota pública, acesso liberado. ---');
         return true;
       }
 
@@ -95,7 +91,9 @@ export class RolesGuard implements CanActivate {
       }
 
       const hasPermission = requiredRoles.some((role) => userRole === role);
-      this.logger.debug(`O usuário tem a permissão necessária? ${hasPermission}`);
+      this.logger.debug(
+        `O usuário tem a permissão necessária? ${hasPermission}`,
+      );
 
       if (!hasPermission) {
         this.logger.error('Usuário não tem a role necessária.');

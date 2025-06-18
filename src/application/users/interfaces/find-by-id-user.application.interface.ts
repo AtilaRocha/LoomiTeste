@@ -1,3 +1,3 @@
 export interface FindByIdUserApplicationInput {
-  id: number;
+  id: string;
 }

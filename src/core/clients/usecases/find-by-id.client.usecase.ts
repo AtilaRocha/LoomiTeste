@@ -16,7 +16,10 @@ export class FindByIdClientUsecase
   async execute(
     input: FindByIdClientUsecaseInput,
   ): Promise<ClientEntity | null> {
-    const client = await this._clientRepository.findOne(input);
+    const client = await this._clientRepository.findOne({
+      id: Number(input.id),
+    });
+
     if (!client) {
       return null;
     }

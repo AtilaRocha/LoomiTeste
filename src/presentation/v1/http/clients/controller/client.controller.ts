@@ -22,7 +22,8 @@ import {
   ApiParam,
   ApiResponse,
   ApiTags,
-} from '@nestjs/swagger';
+}
+  from '@nestjs/swagger';
 
 import { CreateClientApplication } from 'src/application/clients/create-client.application';
 import { UpdateClientApplication } from 'src/application/clients/update-client.application';
@@ -148,6 +149,6 @@ export class ClientController {
   async deleteClient(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Record<string, any>> {
-    return await this.deleteClientApplication.execute({ id });
+    return await this.deleteClientApplication.execute({ id: String(id) });
   }
 }

@@ -21,7 +21,7 @@ export class CreateClientUsecase
       contact: input.contact,
       address: input.address,
       user_id: input.userId,
-      status: true, // valor padrão para status
+      status: true,
     };
   }
 

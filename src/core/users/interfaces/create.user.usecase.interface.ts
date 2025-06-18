@@ -7,8 +7,12 @@ export interface CreateUserUsecaseInput {
   type: UserRole;
 }
 
-export interface CreateUserUsecaseOutput extends CreateUserUsecaseInput {
+export interface CreateUserUsecaseOutput {
   id: number;
+  name: string;
+  email: string;
+  password: string;
+  type: UserRole;
   email_verified: boolean;
   created_at: Date;
   updated_at: Date;

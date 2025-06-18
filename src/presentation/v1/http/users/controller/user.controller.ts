@@ -8,7 +8,6 @@ import {
   HttpStatus,
   Inject,
   Param,
-  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -23,6 +22,7 @@ import {
   ApiParam,
   ApiResponse,
   ApiTags,
+  ApiBody,
 } from '@nestjs/swagger';
 import { Request } from 'express';
 
@@ -57,6 +57,7 @@ import { Role } from 'src/presentation/enum/role.enum';
 import { UserRole } from 'src/shared/user-role.enum';
 import { RolesGuard } from 'src/presentation/guard/roles.guard';
 import { YupValidationPipe } from 'src/shared/validators/validator-pipe';
+import { LoginUserApplicationInput } from 'src/application/users/interfaces/login-user.application.interface';
 
 @Controller('users')
 @ApiTags('Users')
@@ -131,7 +132,7 @@ export class UserController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new YupValidationPipe(loginUserSchema))
-  @ApiOperation({ summary: 'Realiza o login de um usuário' })
+  @ApiBody({ type: LoginUserDtoInput })
   @ApiResponse({
     status: 200,
     description: 'Login bem-sucedido.',
@@ -139,7 +140,8 @@ export class UserController {
   })
   @ApiResponse({ status: 401, description: 'Credenciais inválidas.' })
   async login(@Body() input: LoginUserDtoInput): Promise<Record<string, any>> {
-    return await this.loginUserApplication.execute(input);
+    const validatedInput: LoginUserApplicationInput = input;
+    return await this.loginUserApplication.execute(validatedInput);
   }
 
   @Public()
@@ -154,7 +156,11 @@ export class UserController {
   })
   @ApiResponse({ status: 200, description: 'Conta ativada com sucesso.' })
   @ApiResponse({ status: 400, description: 'Token ou ID inválido.' })
-  async activeAccount(@Param() input: ActivedAccountDtoInput): Promise<void> {
+  async activeAccount(
+    @Param('id') id: string,
+    @Param() input: ActivedAccountDtoInput,
+  ): Promise<void> {
+    input.id = id;
     await this.activedAccountApplication.execute(input);
   }
 
@@ -166,15 +172,13 @@ export class UserController {
   @ApiParam({
     name: 'id',
     description: 'ID do usuário',
-    type: Number,
-    example: 1,
+    type: String,
+    example: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
   })
   @ApiResponse({ status: 200, description: 'Dados do usuário.' })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado.' })
-  async findById(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<Record<string, any>> {
+  async findById(@Param('id') id: string): Promise<Record<string, any>> {
     return await this.findByIdUserApplication.execute({ id });
   }
 
@@ -203,14 +207,14 @@ export class UserController {
   @ApiParam({
     name: 'id',
     description: 'ID do usuário',
-    type: Number,
-    example: 1,
+    type: String,
+    example: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
   })
   @ApiResponse({ status: 200, description: 'Usuário atualizado com sucesso.' })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado.' })
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() input: UpdateUserDtoInput,
   ): Promise<Record<string, any>> {
     return await this.updateUserApplication.execute({ id }, input);
@@ -225,15 +229,13 @@ export class UserController {
   @ApiParam({
     name: 'id',
     description: 'ID do usuário',
-    type: Number,
-    example: 1,
+    type: String,
+    example: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
   })
   @ApiResponse({ status: 204, description: 'Usuário deletado com sucesso.' })
   @ApiResponse({ status: 404, description: 'Usuário não encontrado.' })
   @ApiResponse({ status: 403, description: 'Acesso negado.' })
-  async deleteUser(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<Record<string, any>> {
+  async deleteUser(@Param('id') id: string): Promise<Record<string, any>> {
     return await this.deleteUserApplication.execute({ id });
   }
 }

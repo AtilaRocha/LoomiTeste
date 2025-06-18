@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/infra/database/postgres/prisma/prisma.service';
-import { Order, Prisma, OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrderRepository {
@@ -15,28 +14,28 @@ export class OrderRepository {
     },
   };
 
-  async findMany(where: Prisma.OrderWhereInput) {
+  async findMany(where: any): Promise<any[]> {
     return this.prisma.order.findMany({
       where,
       include: this.fullInclude,
     });
   }
 
-  async findById(id: number): Promise<Order | null> {
+  async findById(id: number): Promise<any | null> {
     return this.prisma.order.findUnique({
       where: { id },
       include: this.fullInclude,
     });
   }
 
-  async create(data: Prisma.OrderCreateInput): Promise<Order> {
+  async create(data: any): Promise<any> {
     return this.prisma.order.create({
       data,
       include: this.fullInclude,
     });
   }
 
-  async update(id: number, data: Prisma.OrderUpdateInput): Promise<Order> {
+  async update(id: number, data: any): Promise<any> {
     return this.prisma.order.update({
       where: { id },
       data,
@@ -44,7 +43,7 @@ export class OrderRepository {
     });
   }
 
-  async delete(id: number): Promise<Order> {
+  async delete(id: number): Promise<any> {
     return this.prisma.order.delete({
       where: { id },
     });

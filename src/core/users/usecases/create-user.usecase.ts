@@ -1,10 +1,10 @@
+import { Inject, Injectable } from '@nestjs/common';
 import { IUseCase } from 'src/core/interfaces/IUsecase';
 import {
   CreateUserUsecaseInput,
   CreateUserUsecaseOutput,
 } from '../interfaces/create.user.usecase.interface';
 import { UserRepository } from '../repository/user.repository';
-import { Inject, Injectable } from '@nestjs/common';
 import { UserRole } from 'src/shared/user-role.enum';
 
 @Injectable()
@@ -12,13 +12,14 @@ export class CreateUserUsecase
   implements IUseCase<CreateUserUsecaseInput, CreateUserUsecaseOutput>
 {
   constructor(
-    @Inject(UserRepository) private readonly _userRepository: UserRepository,
+    @Inject(UserRepository)
+    private readonly userRepository: UserRepository,
   ) {}
 
   async execute(
     input: CreateUserUsecaseInput,
   ): Promise<CreateUserUsecaseOutput> {
-    const user = await this._userRepository.create(input);
+    const user = await this.userRepository.create(input);
 
     return {
       id: user.id,

@@ -10,7 +10,10 @@ export class ActivedAccountUsecase
   constructor(
     @Inject(UserRepository) private readonly userRepository: UserRepository,
   ) {}
+
   async execute(input: ActivedAccountUsecaseInput): Promise<void> {
-    await this.userRepository.update(input.id, { email_verified: true });
+    await this.userRepository.update(String(input.id), {
+      email_verified: true,
+    });
   }
 }

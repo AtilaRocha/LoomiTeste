@@ -8,7 +8,12 @@ import { JwtAuthGuard } from './presentation/guard/jwt-auth.guard';
 async function bootstrap() {
   const app = await NestFactory.create(RootModule);
 
-  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
+  // Removido 'whitelist: true' para evitar conflito com a validação do Yup.
+  // Deixe a validação de campos permitidos para o YupValidationPipe.
+  app.useGlobalPipes(new ValidationPipe({
+    // whitelist: true, // REMOVA OU COMENTE ESSA LINHA
+    // forbidNonWhitelisted: true // REMOVA OU COMENTE ESSA LINHA, se estiver presente
+  }));
 
   const reflector = app.get(Reflector);
   app.useGlobalGuards(new JwtAuthGuard(reflector));
